@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -Wno-deprecations -Wno-missing-methods #-}
+{-# LANGUAGE ExistentialQuantification #-}
 
 module Main where 
 
@@ -132,7 +133,8 @@ primitives = [("+", numericBinop(+)),
               ("cdr", cdr),
               ("cons", cons),
               ("eq?", eqv),
-              ("?eqv", eqv)
+              ("eqv?", eqv),
+              ("equal?", equal)
               ]
 
 numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> ThrowsError LispVal
@@ -167,6 +169,22 @@ unpackString wrongType = throwError $ TypeMismatch "string" wrongType
 unpackBool :: LispVal -> ThrowsError Bool 
 unpackBool (Bool bool) = return bool 
 unpackBool wrongType = throwError $ TypeMismatch "bool" wrongType
+
+data Unpacker = forall a. (Eq a) => AnyUnpacker (LispVal -> ThrowsError a)
+
+unpackEquals :: LispVal -> LispVal -> Unpacker -> ThrowsError Bool 
+unpackEquals x y (AnyUnpacker unpack) = do 
+                                            unpackedx <- unpack x 
+                                            unpackedy <- unpack y 
+                                            return $ unpackedx == unpackedy
+                                            `catchError` (const $ return False)
+
+equal :: [LispVal] -> ThrowsError LispVal 
+equal [x, y] = do 
+                   primitiveEquals <- liftM or $ mapM (unpackEquals x y) [AnyUnpacker unpackNum, AnyUnpacker unpackString, AnyUnpacker unpackBool]
+                   eqvEquals <- eqv [x, y]
+                   return $ Bool $ (primitiveEquals || let (Bool bool) = eqvEquals in bool)
+equal wrongNumArgs = throwError $ NumArgs 2 wrongNumArgs
 
 car :: [LispVal] -> ThrowsError LispVal 
 car [(List (x:xs))] = return x
