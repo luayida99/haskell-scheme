@@ -244,8 +244,8 @@ primitives = [("+", numericBinop (+)),
               ("number?" , unaryOp numberp),
               ("bool?", unaryOp boolp),
               ("list?" , unaryOp listp),
-              ("symbol->string", unaryOp symbol2string),
-              ("string->symbol", unaryOp string2symbol),
+              ("symbol->string", unaryOp symbolToString),
+              ("string->symbol", unaryOp stringToSymbol),
               ("=", numBoolBinop (==)),
               ("<", numBoolBinop (<)),
               (">", numBoolBinop (>)),
@@ -304,7 +304,7 @@ parseVector = do string "#("
 unaryOp :: (LispVal -> ThrowsError LispVal) -> [LispVal] -> ThrowsError LispVal
 unaryOp f [v] = f v
 
-symbolp, numberp, stringp, boolp, listp, string2symbol, symbol2string :: LispVal -> ThrowsError LispVal
+symbolp, numberp, stringp, boolp, listp, stringToSymbol, symbolToString :: LispVal -> ThrowsError LispVal
 symbolp (Atom _) = return $ Bool True
 symbolp _ = return $ Bool False
 
@@ -321,11 +321,11 @@ listp   (List _)   = return $ Bool True
 listp   (DottedList _ _) = return $ Bool True
 listp   _          = return $ Bool False
 
-string2symbol (String x) = return $ Atom x
-string2symbol s = throwError $ TypeMismatch "string" s
+stringToSymbol (String x) = return $ Atom x
+stringToSymbol s = throwError $ TypeMismatch "string" s
 
-symbol2string (Atom x) = return $ String x
-symbol2string s = throwError $ TypeMismatch "symbol" s
+symbolToString (Atom x) = return $ String x
+symbolToString s = throwError $ TypeMismatch "symbol" s
 
 boolBinop :: (LispVal -> ThrowsError a) -> (a -> a -> Bool) -> [LispVal] -> ThrowsError LispVal
 boolBinop unpacker op args = if length args /= 2
