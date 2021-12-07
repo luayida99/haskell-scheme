@@ -1,5 +1,6 @@
 # haskell-scheme
 
 A simple implementation of [Scheme](https://en.wikipedia.org/wiki/Scheme_(programming_language)) in Haskell.
+Following examples given in [Write yourself a Scheme in 48 Hours](https://upload.wikimedia.org/wikipedia/commons/a/aa/Write_Yourself_a_Scheme_in_48_Hours.pdf)
 
-Work in progress. Currently supports basic Scheme functions (arithmetic, list operations, if statements, equality, logical AND and OR) and includes a REPL.
+Work in progress. 
